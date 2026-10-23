@@ -20,7 +20,11 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "verbatimModuleSyntax": true,
-    "plugins": [{ "name": "next" }],
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
     "paths": {
       "presentation/*": ["./src/presentation/*"],
       "shared/*": ["./src/shared/*"]
@@ -33,5 +37,5 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", ".next/dev"]
 }

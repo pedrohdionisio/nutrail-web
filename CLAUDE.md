@@ -41,10 +41,13 @@ Dependência entra quando a primeira feature precisa dela, não antes.
 ## Arquitetura
 
 ```
-src/app/            rotas do Next: page, layout, metadata e ícones. Só montam a screen
+src/app/[lang]/     rotas do Next por idioma: layout (html, fontes, metadata) e page. Só montam a screen
+src/app/            ícones (icon.png, apple-icon.png)
+src/proxy.ts        manda quem abre sem idioma para /pt ou /en, pelo Accept-Language
 src/presentation/   screens, components, layouts — a UI
-src/shared/         utils, constants, assets
-src/styles/         global.css: Tailwind e os tokens
+src/shared/         i18n, constants, hooks, utils
+src/styles/         global.css: Tailwind, os tokens e as utilities de gradiente
+public/             logo.svg (para fundo escuro) e logo-dark.svg (para fundo claro)
 ```
 
 `app → presentation → shared`, nunca o contrário. Alias sem `@` (`presentation/*`, `shared/*`), só
@@ -67,6 +70,23 @@ renderiza. A lógica e o layout ficam na screen, como no app.
 - Sem `any`, sem `as` para calar o compilador, sem `enum`, sem `console.log`.
 - Indentação de 2 espaços, aspas simples, sem trailing comma, linha de até 100 colunas.
 
+## Idiomas
+
+Inglês e português, como o app. Cada idioma é uma rota: `/en` e `/pt`, geradas estáticas
+(`generateStaticParams`, `dynamicParams = false`). Quem abre `nutrail.app` vai para `/pt` se o
+navegador prefere português e para `/en` em qualquer outro caso (`src/proxy.ts`, o antigo
+`middleware.ts` do Next).
+- Os textos ficam em `src/shared/i18n/dictionaries/`: `ptBR.ts` é a fonte e `enUS.ts` é
+  `typeof ptBR`, então chave faltando ou sobrando é erro de tsc. Texto novo entra nos dois, na
+  mesma mudança. Nenhum texto que o usuário vê fica fora deles; unidades (`kcal`, `g`, `cm`) e nomes
+  próprios são a exceção.
+- A page lê o dicionário (`getDictionary(lang)`) e passa para a screen, que passa a cada seção só a
+  parte dela (`dictionary.hero`). Sem lib de i18n: os textos ficam no servidor, e os componentes
+  cliente recebem só o que exibem.
+- Números pelo `Intl.NumberFormat` com `HTML_LANG[locale]` (`1,343` em inglês, `1.343` em
+  português).
+- Cada idioma tem título, descrição, `canonical` e `alternates` (hreflang) próprios.
+
 ## Design
 
 Os tokens são os do app, com os mesmos nomes de classe: cores (`lime-500`, `gray-600`,
@@ -76,5 +96,27 @@ padrão do Tailwind está desligada (`--color-*: initial`), então só existem a
 novo entra lá, com o mesmo nome que teria no app. O fundo da marca é `lime-900` (`#022C22`), o mesmo
 do ícone e do splash.
 
+Da landing vieram tokens próprios: os tons claros `lime-50` e `lime-100`, os títulos
+(`text-hero`, `text-display`, `text-heading`, `text-subheading`, `text-lead`, com o espaçamento
+negativo da marca), os raios `rounded-card` (24px) e `rounded-shell` (56px), as bordas por sombra
+interna (`shadow-line`, `shadow-line-light`, `shadow-lift`), o easing `ease-out-soft` e as utilities
+de fundo `bg-hero`, `bg-calculator` e `bg-cta-fade`. Borda é sombra interna, não `border`, para
+não mexer no tamanho da caixa. Toda animação respeita `prefers-reduced-motion`.
+
 Imagem pelo `next/image`; o ícone e o favicon são os do app (`src/app/icon.png`,
 `src/app/apple-icon.png`).
+
+**Mídia:** prints e vídeos do app ficam em `public/media/`, a partir dos originais em `media-raw/`
+(fora do git). Vídeo é MP4 H.264 sem áudio, com capa (`poster`), tocado pelo
+`presentation/components/LoopVideo`, que não dá play com `prefers-reduced-motion`. Ícones são do
+`lucide-react`, como no app.
+
+**Imagem de compartilhamento:** `src/app/[lang]/opengraph-image.tsx` gera no build o cartão de
+1200×630 que aparece no LinkedIn, WhatsApp e X, um por idioma, com os textos de
+`dictionary.shareImage`. O `ImageResponse` só entende estilo inline e precisa do arquivo da fonte:
+a Host Grotesk fica em `src/shared/assets/fonts/` (licença OFL junto). Arquivo lido ali usa caminho
+literal, para o Next rastrear só ele e não o projeto inteiro.
+
+A calculadora de metas (`Calculator/utils/calculateGoals.ts`) é a mesma conta da `GoalCalculator`
+da API (Mifflin-St Jeor, fator de atividade, ±500 kcal, proteína 2 g/kg, gordura 0,9 g/kg). Mudou
+lá, muda aqui.

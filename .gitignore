@@ -27,3 +27,5 @@ yarn-error.*
 .claude/settings.local.json
 
 coverage/
+
+media-raw/

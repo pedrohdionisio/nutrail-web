@@ -19,8 +19,11 @@ Requirements: Node.js (see `.nvmrc`) and Yarn 1.
 
 ```bash
 yarn install
-yarn dev        # http://localhost:3000
+yarn dev        # http://localhost:3000, redirected to /en or /pt by the browser language
 ```
+
+The site is in English and Portuguese, one static route per language (`/en`, `/pt`), with the
+texts in `src/shared/i18n/dictionaries/`.
 
 | Script                      | What it does                      |
 | --------------------------- | --------------------------------- |
